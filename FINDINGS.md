@@ -79,5 +79,5 @@ Surprises hit while building the BikeHelpdesk smoke test (mxcli nightly-20261115
 ## Not done / not possible here
 - The one-time Studio Pro 11.16 conversion (no Studio Pro in the sandbox; `mx convert` does not do it).
 - Mendix Cloud text generation (`MX_GENAI_KEY` missing): HelpdeskAgent was exercised on the OpenRouter model.
-- Filing issues on ako/mxcli: the session's GitHub scope is ako/chatv3 and attaching ako/mxcli was denied; the
-  drafts are in `issues/ako-mxcli-issues.md`.
+- Issues on ako/mxcli: filed after the first attempt to attach the repo was denied and a later explicit request
+  succeeded: #2308-#2314 plus a comment on #1409 (see `issues/ako-mxcli-issues.md`).
