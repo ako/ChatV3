@@ -1,0 +1,162 @@
+mdl 1;
+
+-- 05 SPARQL in the runtime: DuckDB attaches the app's own Postgres read-only and
+-- maps Helpdesk.Product with the R2RML file in resources/duckdb/.
+-- Run order: 01 -> 05 -> 02 ... (the agent in 02 uses Tool_ProductGraph from here).
+
+alter module Helpdesk
+  add jar dependency if not exists (
+    group = 'org.duckdb',
+    artifact = 'duckdb_jdbc',
+    version = '2.0.0.1',
+    included = true,
+  );
+
+/** Connection string DuckDB's postgres scanner attaches. Local dev default; override per environment. */
+create or modify constant Helpdesk.PgConnection (
+  Type: String,
+  DefaultValue: 'host=127.0.0.1 port=5432 dbname=bikehelpdesk user=mendix password=mendix'
+);
+
+/** Runs SPARQL over Helpdesk.Product via DuckDB + the rdf extension + resources/duckdb/product.r2rml.ttl.
+    Question is a SPARQL SELECT (prefix ex: <http://bike.example/> is added when missing),
+    or free text containing a SKU, which becomes "what is compatible with that SKU". Returns a JSON array. */
+create or modify java action Helpdesk.RunSparql(
+  /** A SPARQL SELECT, or free text that names a SKU such as EB-200. */
+  Question: string not null,
+  /** DuckDB postgres connection string. */
+  PgConnection: string not null
+) returns string as $Json
+as $$
+import com.mendix.core.Core;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.util.Properties;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
+File resources = Core.getConfiguration().getResourcesPath();
+File duck = new File(resources, "duckdb");
+String mapping = new File(duck, "product.r2rml.ttl").getAbsolutePath();
+String extDir = ensureExtensions(duck);
+String sparql = toSparql(this.Question);
+
+try (Connection c = open();
+     Statement s = c.createStatement()) {
+	s.execute("SET extension_directory='" + extDir.replace("'", "''") + "'");
+	s.execute("LOAD postgres_scanner");
+	s.execute("LOAD rdf");
+	try (PreparedStatement a = c.prepareStatement("ATTACH ? AS pg (TYPE postgres, READ_ONLY)")) {
+		a.setString(1, this.PgConnection);
+		a.execute();
+	}
+	try (PreparedStatement q = c.prepareStatement("SELECT * FROM execute_sparql(?, ?)")) {
+		q.setString(1, sparql);
+		q.setString(2, mapping);
+		try (ResultSet r = q.executeQuery()) {
+			return toJson(r);
+		}
+	}
+}
+$$
+extra code $$
+private static final Pattern SKU = Pattern.compile("[A-Z]{2,4}-\\d{2,4}");
+private static final String PREFIX = "PREFIX ex: <http://bike.example/>\n";
+
+/** DriverManager does not see the driver from Mendix's userlib class loader, so call the driver directly. */
+private static Connection open() throws Exception {
+	return new org.duckdb.DuckDBDriver().connect("jdbc:duckdb:", new Properties());
+}
+
+private static String toSparql(String question) {
+	String t = question.trim();
+	if (t.toUpperCase().contains("SELECT")) {
+		return t.toUpperCase().contains("PREFIX") ? t : PREFIX + t;
+	}
+	Matcher m = SKU.matcher(t.toUpperCase());
+	if (!m.find()) {
+		return PREFIX + "SELECT ?sku ?name ?kind ?price WHERE { ?p a ex:Product ; ex:sku ?sku ; ex:name ?name ; ex:kind ?kind ; ex:price ?price }";
+	}
+	return PREFIX + "SELECT ?sku ?name ?kind ?price WHERE { ?p ex:compatibleWith <http://bike.example/product/" + m.group()
+		+ "> ; ex:sku ?sku ; ex:name ?name ; ex:kind ?kind ; ex:price ?price }";
+}
+
+private static String toJson(ResultSet r) throws Exception {
+	ResultSetMetaData md = r.getMetaData();
+	StringBuilder b = new StringBuilder("[");
+	boolean firstRow = true;
+	while (r.next()) {
+		if (!firstRow) b.append(',');
+		firstRow = false;
+		b.append('{');
+		for (int i = 1; i <= md.getColumnCount(); i++) {
+			if (i > 1) b.append(',');
+			String v = r.getString(i);
+			b.append('"').append(md.getColumnLabel(i).replaceFirst("^(\\?|v_)", "")).append("\":");
+			b.append(v == null ? "null" : '"' + v.replace("\\", "\\\\").replace("\"", "\\\"") + '"');
+		}
+		b.append('}');
+	}
+	return b.append(']').toString();
+}
+
+/** Puts the bundled extensions into a DuckDB extension_directory (once per JVM). Loading an extension by file
+    path is refused as unsigned, so they are installed there. postgres_scanner is a core extension and goes
+    through INSTALL; DuckDB checks INSTALL-by-path against the core key only, so the community rdf extension
+    (already signed by the community key) is unpacked into the directory next to its .info file. */
+private static synchronized String ensureExtensions(File duck) throws Exception {
+	Path base = Path.of(System.getProperty("java.io.tmpdir"), "mx-duckdb-ext");
+	String version;
+	String platform;
+	try (Connection c = open();
+	     Statement s = c.createStatement();
+	     ResultSet r = s.executeQuery("SELECT version(), (SELECT platform FROM pragma_platform())")) {
+		r.next();
+		version = r.getString(1);
+		platform = r.getString(2);
+	}
+	Path dir = base.resolve(version).resolve(platform);
+	Files.createDirectories(dir);
+	if (!Files.exists(dir.resolve("postgres_scanner.duckdb_extension"))) {
+		try (Connection c = open();
+		     Statement s = c.createStatement()) {
+			s.execute("SET extension_directory='" + base.toString().replace("'", "''") + "'");
+			s.execute("INSTALL '" + new File(duck, "postgres_scanner.duckdb_extension.gz").getAbsolutePath().replace("'", "''") + "'");
+		}
+	}
+	if (!Files.exists(dir.resolve("rdf.duckdb_extension"))) {
+		Path tmp = dir.resolve("rdf.duckdb_extension.part");
+		try (InputStream in = new GZIPInputStream(Files.newInputStream(new File(duck, "rdf.duckdb_extension.gz").toPath()));
+		     OutputStream out = Files.newOutputStream(tmp)) {
+			in.transferTo(out);
+		}
+		Files.copy(new File(duck, "rdf.duckdb_extension.info").toPath(), dir.resolve("rdf.duckdb_extension.info"), StandardCopyOption.REPLACE_EXISTING);
+		Files.move(tmp, dir.resolve("rdf.duckdb_extension"), StandardCopyOption.REPLACE_EXISTING);
+	}
+	return base.toString();
+}
+$$;
+
+/** Agent tool: ask the product graph (SPARQL over the Product mapping) a question. */
+create or modify microflow Helpdesk.Tool_ProductGraph (
+  $Question: String
+)
+returns String as $Answer
+begin
+  $Json = call java action Helpdesk.RunSparql(Question = $Question, PgConnection = @Helpdesk.PgConnection)
+    on error without rollback begin
+      log error node 'Sparql' 'SPARQL failed for: ' + $Question;
+      return 'The product graph could not answer that question.';
+    end error;
+  return $Json;
+end;

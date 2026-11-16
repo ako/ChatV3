@@ -1,0 +1,11 @@
+mdl 1;
+
+-- 10 After-startup: one composer, extended by later scripts.
+create or modify microflow Helpdesk.ASU_Startup ()
+returns Boolean
+begin
+  call microflow Helpdesk.ASU_SeedProducts();
+  return true;
+end;
+
+alter settings runtime (AfterStartupMicroflow: 'Helpdesk.ASU_Startup');

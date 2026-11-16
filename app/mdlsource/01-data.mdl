@@ -1,0 +1,86 @@
+mdl 1;
+
+-- 01 Data: the one module, one entity, a self-association and an idempotent seed.
+
+create or modify module Helpdesk;
+create or modify module role Helpdesk.User;
+
+/** A catalogue item: an e-bike, a battery, a motor... */
+create or modify persistent entity Helpdesk.Product (
+  Sku: String(20) not null error message 'Sku is required' unique,
+  Name: String(100),
+  Kind: String(30),
+  Price: Decimal
+)
+index (Sku);
+
+/** Part-to-bike compatibility: BAT-418 CompatibleWith EB-200. */
+create or modify association Helpdesk.Product_CompatibleWith
+  from Helpdesk.Product to Helpdesk.Product
+  type ReferenceSet
+  owner Default;
+
+-- Find-or-create one product by Sku, so the seed can run on every startup.
+create or modify microflow Helpdesk.Product_Upsert (
+  $Sku: String,
+  $Name: String,
+  $Kind: String,
+  $Price: Decimal
+)
+returns Helpdesk.Product as $Result
+begin
+  retrieve $Existing from Helpdesk.Product where Sku = $Sku first;
+  if $Existing = empty then
+    $Created = create Helpdesk.Product (Sku = $Sku, Name = $Name, Kind = $Kind, Price = $Price);
+    commit $Created;
+    return $Created;
+  end if;
+  change $Existing (Name = $Name, Kind = $Kind, Price = $Price);
+  commit $Existing;
+  return $Existing;
+end;
+
+-- After-startup part 1: the 6 products and which fit on which.
+create or modify microflow Helpdesk.ASU_SeedProducts ()
+begin
+  $Bike = call microflow Helpdesk.Product_Upsert(Sku = 'EB-200', Name = 'Commuter e-bike EB-200', Kind = 'Bike', Price = 2499.00);
+  $Battery = call microflow Helpdesk.Product_Upsert(Sku = 'BAT-418', Name = 'Battery 36V 418Wh', Kind = 'Battery', Price = 349.00);
+  $Motor = call microflow Helpdesk.Product_Upsert(Sku = 'MOT-250', Name = 'Hub motor 250W', Kind = 'Motor', Price = 499.00);
+  $Light = call microflow Helpdesk.Product_Upsert(Sku = 'LGT-100', Name = 'Headlight 100 lux', Kind = 'Light', Price = 39.90);
+  $Brake = call microflow Helpdesk.Product_Upsert(Sku = 'BRK-310', Name = 'Disc brake set 160mm', Kind = 'Brake', Price = 89.50);
+  $Charger = call microflow Helpdesk.Product_Upsert(Sku = 'CHG-042', Name = 'Charger 42V 4A', Kind = 'Charger', Price = 59.00);
+  -- the parts that fit on the EB-200
+  change $Battery (Helpdesk.Product_CompatibleWith = $Bike);
+  change $Motor (Helpdesk.Product_CompatibleWith = $Bike);
+  change $Light (Helpdesk.Product_CompatibleWith = $Bike);
+  change $Brake (Helpdesk.Product_CompatibleWith = $Bike);
+  commit $Battery;
+  commit $Motor;
+  commit $Light;
+  commit $Brake;
+  -- the charger fits the battery, not the bike
+  change $Charger (Helpdesk.Product_CompatibleWith = $Battery);
+  commit $Charger;
+end;
+
+/** Agent tool and MCP tool: look one product up by Sku. Plain text out. */
+create or modify microflow Helpdesk.Tool_GetProduct (
+  $Sku: String
+)
+returns String as $Answer
+begin
+  retrieve $Product from Helpdesk.Product where Sku = $Sku first;
+  if $Product = empty then
+    return 'No product with Sku ' + $Sku;
+  end if;
+  return $Product/Sku + ' | ' + $Product/Name + ' | ' + $Product/Kind + ' | price EUR ' + toString($Product/Price);
+end;
+
+-- Run on PostgreSQL (mxcli run --local --ensure-db provisions it).
+alter settings configuration 'Default' (
+  DatabaseType: 'PostgreSql',
+  DatabaseUrl: 'localhost:5432',
+  DatabaseName: 'bikehelpdesk',
+  DatabaseUserName: 'mendix',
+  DatabasePassword: 'mendix'
+);

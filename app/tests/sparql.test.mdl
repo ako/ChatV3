@@ -1,0 +1,35 @@
+/**
+ * @test SPARQL SELECT over the Product R2RML mapping returns 6 rows (6 x the 5 chars of the key "sku" = 30)
+ * @expect $result = 30
+ */
+$Json = call java action Helpdesk.RunSparql(
+  Question = 'SELECT ?sku WHERE { ?p a ex:Product ; ex:sku ?sku }',
+  PgConnection = @Helpdesk.PgConnection
+);
+declare $result Integer = 0;
+set $result = length($Json) - length(replaceAll($Json, '"sku"', ''));
+/
+
+/**
+ * @test SPARQL result holds exactly the 6 seeded SKUs
+ * @expect $result = true
+ */
+$Json = call java action Helpdesk.RunSparql(
+  Question = 'SELECT ?sku WHERE { ?p a ex:Product ; ex:sku ?sku }',
+  PgConnection = @Helpdesk.PgConnection
+);
+declare $result Boolean = false;
+set $result = contains($Json, 'EB-200') and contains($Json, 'BAT-418') and contains($Json, 'MOT-250') and contains($Json, 'LGT-100') and contains($Json, 'BRK-310') and contains($Json, 'CHG-042');
+/
+
+/**
+ * @test Compatibility graph: free text naming EB-200 returns the 4 parts that fit, not the charger
+ * @expect $result = true
+ */
+$Json = call java action Helpdesk.RunSparql(
+  Question = 'what fits on EB-200?',
+  PgConnection = @Helpdesk.PgConnection
+);
+declare $result Boolean = false;
+set $result = contains($Json, 'BAT-418') and contains($Json, 'MOT-250') and contains($Json, 'LGT-100') and contains($Json, 'BRK-310') and not(contains($Json, 'CHG-042'));
+/

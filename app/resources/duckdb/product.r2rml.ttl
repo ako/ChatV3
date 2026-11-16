@@ -1,0 +1,17 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix ex: <http://bike.example/> .
+
+# One row of Helpdesk.Product -> one ex:Product resource.
+<#ProductMap> a rr:TriplesMap ;
+  rr:logicalTable [ rr:sqlQuery "SELECT sku, name, kind, price FROM pg.public.\"helpdesk$product\"" ] ;
+  rr:subjectMap [ rr:template "http://bike.example/product/{sku}" ; rr:class ex:Product ] ;
+  rr:predicateObjectMap [ rr:predicate ex:sku ; rr:objectMap [ rr:column "sku" ] ] ;
+  rr:predicateObjectMap [ rr:predicate ex:name ; rr:objectMap [ rr:column "name" ] ] ;
+  rr:predicateObjectMap [ rr:predicate ex:kind ; rr:objectMap [ rr:column "kind" ] ] ;
+  rr:predicateObjectMap [ rr:predicate ex:price ; rr:objectMap [ rr:column "price" ] ] .
+
+# The Product_CompatibleWith table -> ex:compatibleWith (part -> bike).
+<#CompatibleMap> a rr:TriplesMap ;
+  rr:logicalTable [ rr:sqlQuery "SELECT a.sku AS part, b.sku AS target FROM pg.public.\"helpdesk$product_compatiblewith\" j JOIN pg.public.\"helpdesk$product\" a ON a.id = j.\"helpdesk$productid1\" JOIN pg.public.\"helpdesk$product\" b ON b.id = j.\"helpdesk$productid2\"" ] ;
+  rr:subjectMap [ rr:template "http://bike.example/product/{part}" ] ;
+  rr:predicateObjectMap [ rr:predicate ex:compatibleWith ; rr:objectMap [ rr:template "http://bike.example/product/{target}" ] ] .
