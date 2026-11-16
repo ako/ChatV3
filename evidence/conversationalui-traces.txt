@@ -1,0 +1,105 @@
+English, United States
+Helpdesk chat
+Tickets
+Task inbox
+Policy search
+Product graph
+OpenRouter agent
+Traces
+Token usage
+Traces
+ Filter
+Total Tokens
+WeekMonth6 MonthsCustom
+Total invocations
+6
+Total conversations
+6
+Total token consumption
+8,839 (7,467 / 1,372)
+Errors
+0
+Error rate
+0.00
+Oct 162026
+Oct 23
+Oct 30
+Nov 6
+Nov 13
+0
+2k
+4k
+6k
+Input tokens
+Output tokens
+Date (local timezone)
+Tokens
+Agent
+Version
+Start time
+Duration
+Model
+Tokens
+Tool calls
+Error
+HelpdeskAgent
+v1
+11/16/2026, 11:36 AM
+1.8s
+OpenRouter free model
+815 (635 / 180)
+-
+HelpdeskAgent
+v1
+11/16/2026, 11:32 AM
+1.3s
+OpenRouter free model
+752 (635 / 117)
+-
+HelpdeskAgent
+v1
+11/16/2026, 11:28 AM
+0.4s
+OpenRouter free model
+655 (635 / 20)
+-
+OpenRouter Product Agent
+v1
+11/16/2026, 11:28 AM
+1.6s
+OpenRouter free model
+848 (724 / 124)
+1
+HelpdeskAgent
+v1
+11/16/2026, 11:27 AM
+5.4s
+OpenRouter free model
+2,907 (2,419 / 488)
+1
+1
+HelpdeskAgent
+v1
+11/16/2026, 11:18 AM
+6s
+OpenRouter free model
+2,862 (2,419 / 443)
+1
+1
+Currently showing 1 to 6 of 6
+1 to 6 of 6
+Select user
+
+Select one of the demo users to view the application with the associated user roles.
+
+demo_administrator
+
+Administrator
+
+demo_user
+
+User
+
+helpdesk
+
+Administrator

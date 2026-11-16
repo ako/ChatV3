@@ -1,0 +1,50 @@
+mdl 1;
+
+-- 12 Security: Prototype level (pages and microflows are guarded; entity access is not enforced at this level).
+-- Everything in Helpdesk is granted to Helpdesk.User; the app's two user roles carry the GenAI, MCP, workflow
+-- and monitoring module roles the pages and the agent need. One demo user for the browser scripts.
+
+alter app security ( SecurityLevel: PROTOTYPE, EnableDemoUsers: TRUE );
+
+alter user role Administrator add module roles (Helpdesk.User, GenAICommons.User, GenAICommons.TraceMonitoring, GenAICommons.UsageMonitoring, MxGenAIConnector.User, AgentCommons.AgentAdmin, MCPClient.User, ConversationalUI.User, ConversationalUI.TraceMonitoring, ConversationalUI.UsageMonitoring, PgVectorKnowledgeBase.User, OpenAIConnector.User, WorkflowCommons.User, Encryption.User, GenAICommons.Administrator, WorkflowCommons.Administrator);
+alter user role User add module roles (Helpdesk.User, GenAICommons.User, GenAICommons.TraceMonitoring, GenAICommons.UsageMonitoring, MxGenAIConnector.User, AgentCommons.AgentAdmin, MCPClient.User, ConversationalUI.User, ConversationalUI.TraceMonitoring, ConversationalUI.UsageMonitoring, PgVectorKnowledgeBase.User, OpenAIConnector.User, WorkflowCommons.User, Encryption.User);
+
+create or modify demo user 'helpdesk' ( Password: 'Helpdesk2026Demo', UserRoles: (Administrator) );
+
+grant execute on microflow Helpdesk.ACT_Graph to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_Policy to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_RuntimeAgent to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_Task_Approve to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_Task_Reject to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_Ticket_New to Helpdesk.User;
+grant execute on microflow Helpdesk.ACT_Ticket_Submit to Helpdesk.User;
+grant execute on microflow Helpdesk.Ask_New to Helpdesk.User;
+grant execute on microflow Helpdesk.ASU_Registrations to Helpdesk.User;
+grant execute on microflow Helpdesk.ASU_SeedProducts to Helpdesk.User;
+grant execute on microflow Helpdesk.ASU_Startup to Helpdesk.User;
+grant execute on microflow Helpdesk.Chat_GetCreate to Helpdesk.User;
+grant execute on microflow Helpdesk.Chat_UseOpenRouterModel to Helpdesk.User;
+grant execute on microflow Helpdesk.MCP_Authenticate to Helpdesk.User;
+grant execute on microflow Helpdesk.MCP_EnsureUser to Helpdesk.User;
+grant execute on microflow Helpdesk.McpClientHeaders to Helpdesk.User;
+grant execute on microflow Helpdesk.OpenRouter_Register to Helpdesk.User;
+grant execute on microflow Helpdesk.Policy_Search to Helpdesk.User;
+grant execute on microflow Helpdesk.Policy_Seed to Helpdesk.User;
+grant execute on microflow Helpdesk.Policy_Upsert to Helpdesk.User;
+grant execute on microflow Helpdesk.PolicyKB_GetCreateConfiguration to Helpdesk.User;
+grant execute on microflow Helpdesk.PolicyKB_Load to Helpdesk.User;
+grant execute on microflow Helpdesk.Product_Upsert to Helpdesk.User;
+grant execute on microflow Helpdesk.RuntimeAgent_Ask to Helpdesk.User;
+grant execute on microflow Helpdesk.RuntimeAgent_Seed to Helpdesk.User;
+grant execute on microflow Helpdesk.Ticket_CategoryFromText to Helpdesk.User;
+grant execute on microflow Helpdesk.Ticket_Classify to Helpdesk.User;
+grant execute on microflow Helpdesk.Tool_GetProduct to Helpdesk.User;
+grant execute on microflow Helpdesk.Tool_ProductGraph to Helpdesk.User;
+
+grant view on page Helpdesk.Chat to Helpdesk.User;
+grant view on page Helpdesk.Graph_Page to Helpdesk.User;
+grant view on page Helpdesk.Policy_Page to Helpdesk.User;
+grant view on page Helpdesk.RuntimeAgent_Page to Helpdesk.User;
+grant view on page Helpdesk.Ticket_ApproveTask to Helpdesk.User;
+grant view on page Helpdesk.Ticket_NewEdit to Helpdesk.User;
+grant view on page Helpdesk.Ticket_Overview to Helpdesk.User;

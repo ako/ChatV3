@@ -76,6 +76,19 @@ begin
   return $Product/Sku + ' | ' + $Product/Name + ' | ' + $Product/Kind + ' | price EUR ' + toString($Product/Price);
 end;
 
+/** A question box for the feature pages (policy search, product graph, runtime agent). Never stored. */
+create or modify non-persistent entity Helpdesk.Ask (
+  Question: String(1000),
+  Answer: String(unlimited)
+);
+
+create or modify microflow Helpdesk.Ask_New ()
+returns Helpdesk.Ask as $Ask
+begin
+  $Ask = create Helpdesk.Ask (Question = '', Answer = '');
+  return $Ask;
+end;
+
 -- Run on PostgreSQL (mxcli run --local --ensure-db provisions it).
 alter settings configuration 'Default' (
   DatabaseType: 'PostgreSql',

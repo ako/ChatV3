@@ -33,9 +33,18 @@ end;
 create or modify microflow Helpdesk.ASU_Startup ()
 returns Boolean
 begin
-  call microflow Helpdesk.ASU_SeedProducts();
-  call microflow Helpdesk.Policy_Seed();
-  call microflow Helpdesk.MCP_EnsureUser();
+  call microflow Helpdesk.ASU_SeedProducts()
+    on error without rollback begin
+      log error node 'Helpdesk' 'Seeding products failed';
+    end error;
+  call microflow Helpdesk.Policy_Seed()
+    on error without rollback begin
+      log error node 'Helpdesk' 'Seeding policies failed';
+    end error;
+  call microflow Helpdesk.MCP_EnsureUser()
+    on error without rollback begin
+      log error node 'Helpdesk' 'Creating the MCP service user failed';
+    end error;
   call microflow Helpdesk.ASU_Registrations();
   -- imports the Agent Editor documents (model, KB, MCP, agent) and starts the published MCP server
   $Imported = call microflow AgentEditorCommons.ASU_AgentEditor()

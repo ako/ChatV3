@@ -130,3 +130,29 @@ begin
   end loop;
   return trim($Out);
 end;
+
+create or modify microflow Helpdesk.ACT_Policy (
+  $Ask: Helpdesk.Ask
+)
+begin
+  $Text = call microflow Helpdesk.Policy_Search(Question = $Ask/Question);
+  change $Ask (Answer = $Text);
+end;
+
+create or modify page Helpdesk.Policy_Page (
+  Title: 'Policy search',
+  Layout: MyFirstModule.App_Default
+) {
+  layoutgrid PolicyGrid {
+    row {
+      column (DesktopWidth: AutoFill) {
+        dynamictext PolicyHeading (Content: 'Policy search (PgVector nearest chunks)', RenderMode: H2)
+        dataview PolicyView (DataSource: microflow Helpdesk.Ask_New) {
+          textbox PolicyQuestion (Label: 'Policy question', Attribute: Question)
+          actionbutton PolicyGo (Caption: 'Ask', Action: call microflow Helpdesk.ACT_Policy(Ask = $currentObject), ButtonStyle: Primary)
+          textarea PolicyAnswer (Label: 'Answer', Attribute: Answer, Editable: Never)
+        }
+      }
+    }
+  }
+};

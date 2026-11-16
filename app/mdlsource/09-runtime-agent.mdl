@@ -111,3 +111,29 @@ begin
   $Text = call microflow GenAICommons.Response_GetModelResponseString(Response = $Response);
   return $Text;
 end;
+
+create or modify microflow Helpdesk.ACT_RuntimeAgent (
+  $Ask: Helpdesk.Ask
+)
+begin
+  $Text = call microflow Helpdesk.RuntimeAgent_Ask(Question = $Ask/Question);
+  change $Ask (Answer = $Text);
+end;
+
+create or modify page Helpdesk.RuntimeAgent_Page (
+  Title: 'OpenRouter agent',
+  Layout: MyFirstModule.App_Default
+) {
+  layoutgrid RuntimeAgentGrid {
+    row {
+      column (DesktopWidth: AutoFill) {
+        dynamictext RuntimeAgentHeading (Content: 'OpenRouter agent with the GetProduct tool', RenderMode: H2)
+        dataview RuntimeAgentView (DataSource: microflow Helpdesk.Ask_New) {
+          textbox RuntimeAgentQuestion (Label: 'Question (name a SKU, e.g. BAT-418)', Attribute: Question)
+          actionbutton RuntimeAgentGo (Caption: 'Ask', Action: call microflow Helpdesk.ACT_RuntimeAgent(Ask = $currentObject), ButtonStyle: Primary)
+          textarea RuntimeAgentAnswer (Label: 'Answer', Attribute: Answer, Editable: Never)
+        }
+      }
+    }
+  }
+};

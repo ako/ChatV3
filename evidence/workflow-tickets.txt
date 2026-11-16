@@ -1,0 +1,40 @@
+Helpdesk chat
+Tickets
+Task inbox
+Policy search
+Product graph
+OpenRouter agent
+Traces
+Token usage
+English, United States
+Tickets
+New ticket
+Subject
+Category (set by the AI step)
+Status
+Battery arrived defective
+Other
+Awaiting approval
+Battery arrived defective
+Warranty
+Awaiting approval
+Battery arrived defective
+Warranty
+Awaiting approval
+Currently showing 1 to 3 of 3
+1 to 3 of 3
+Select user
+
+Select one of the demo users to view the application with the associated user roles.
+
+demo_administrator
+
+Administrator
+
+demo_user
+
+User
+
+helpdesk
+
+Administrator

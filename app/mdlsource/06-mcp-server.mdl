@@ -11,7 +11,8 @@ create or modify microflow Helpdesk.MCP_EnsureUser ()
 begin
   retrieve $Existing from System.User where Name = 'mcp_service' first;
   if $Existing = empty then
-    $Created = create System.User (Name = 'mcp_service', Password = @Helpdesk.McpToken, Active = true);
+    retrieve $Role from System.UserRole where Name = 'User' first;
+    $Created = create System.User (Name = 'mcp_service', Password = 'Svc-Aa1-' + @Helpdesk.McpToken, Active = true, System.UserRoles = $Role);
     commit $Created;
   end if;
 end;

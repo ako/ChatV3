@@ -1,0 +1,36 @@
+Helpdesk chat
+Tickets
+Task inbox
+Policy search
+Product graph
+OpenRouter agent
+Traces
+Token usage
+English, United States
+You
+What does BAT-418 cost, and what fits on EB-200?
+Assistant
+
+BAT‑418 price: EUR 349
+
+Products that fit on EB‑200:
+
+LGT‑100 Headlight 100 lux – EUR 39.90
+BAT‑418 Battery 36V 418Wh – EUR 349
+MOT‑250 Hub motor 250 W – EUR 499
+BRK‑310 Disc brake set 160 mm – EUR 89.50
+Select user
+
+Select one of the demo users to view the application with the associated user roles.
+
+demo_administrator
+
+Administrator
+
+demo_user
+
+User
+
+helpdesk
+
+Administrator

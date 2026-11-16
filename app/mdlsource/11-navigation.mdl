@@ -7,4 +7,11 @@ create or modify navigation Responsive
   home page Helpdesk.Chat
 {
   menu item 'Helpdesk chat' ( OnClick: show page Helpdesk.Chat, Icon: glyph 57377 )
+  menu item 'Tickets' ( OnClick: show page Helpdesk.Ticket_Overview, Icon: glyph 57377 )
+  menu item 'Task inbox' ( OnClick: show page WorkflowCommons.TaskInbox, Icon: glyph 57377 )
+  menu item 'Policy search' ( OnClick: show page Helpdesk.Policy_Page, Icon: glyph 57377 )
+  menu item 'Product graph' ( OnClick: show page Helpdesk.Graph_Page, Icon: glyph 57377 )
+  menu item 'OpenRouter agent' ( OnClick: show page Helpdesk.RuntimeAgent_Page, Icon: glyph 57377 )
+  menu item 'Traces' ( OnClick: show page ConversationalUI.Trace_Overview, Icon: glyph 57377 )
+  menu item 'Token usage' ( OnClick: call microflow ConversationalUI.NAV_TokenConsumptionMonitor, Icon: glyph 57377 )
 };

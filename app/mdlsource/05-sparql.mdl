@@ -160,3 +160,29 @@ begin
     end error;
   return $Json;
 end;
+
+create or modify microflow Helpdesk.ACT_Graph (
+  $Ask: Helpdesk.Ask
+)
+begin
+  $Json = call microflow Helpdesk.Tool_ProductGraph(Question = $Ask/Question);
+  change $Ask (Answer = $Json);
+end;
+
+create or modify page Helpdesk.Graph_Page (
+  Title: 'Product graph',
+  Layout: MyFirstModule.App_Default
+) {
+  layoutgrid GraphGrid {
+    row {
+      column (DesktopWidth: AutoFill) {
+        dynamictext GraphHeading (Content: 'Product graph (SPARQL over R2RML)', RenderMode: H2)
+        dataview GraphView (DataSource: microflow Helpdesk.Ask_New) {
+          textbox GraphQuestion (Label: 'SKU or SPARQL SELECT', Attribute: Question)
+          actionbutton GraphGo (Caption: 'Ask', Action: call microflow Helpdesk.ACT_Graph(Ask = $currentObject), ButtonStyle: Primary)
+          textarea GraphAnswer (Label: 'Answer', Attribute: Answer, Editable: Never)
+        }
+      }
+    }
+  }
+};

@@ -1,0 +1,81 @@
+# Data evidence 2026-11-16T11:37:22Z
+-- select Sku, Name, Kind, Price from Helpdesk.Product order by Sku
+| Price | Kind    | Sku     | Name                   |
+|-------|---------|---------|------------------------|
+| 349   | Battery | BAT-418 | Battery 36V 418Wh      |
+| 89.5  | Brake   | BRK-310 | Disc brake set 160mm   |
+| 59    | Charger | CHG-042 | Charger 42V 4A         |
+| 2499  | Bike    | EB-200  | Commuter e-bike EB-200 |
+| 39.9  | Light   | LGT-100 | Headlight 100 lux      |
+| 499   | Motor   | MOT-250 | Hub motor 250W         |
+(6 rows)
+
+-- select Title, Body from Helpdesk.Policy order by Title
+| Title    | Body                                               |
+|----------|----------------------------------------------------|
+| Returns  | Unused products can be returned within 30 days ... |
+| Shipping | Orders over 100 euro ship free within the EU in... |
+| Warranty | E-bike frames and motors carry a 5 year warrant... |
+(3 rows)
+
+-- select Name from PgVectorKnowledgeBase.PgVectorKnowledgeBase
+| Name     |
+|----------|
+| policies |
+(1 rows)
+
+-- SQL: chunks stored in the pgvector table 'policies' (id, human readable id, dims)
+ chunks 
+--------
+      3
+(1 row)
+
+ chunkid | key | value 
+---------+-----+-------
+(0 rows)
+vector extension: 0.6.0
+
+-- select ToolName, ToolCallStatus, Input from GenAICommons.ToolSpan order by StartTime
+| Input                              | ToolName     | ToolCallStatus |
+|------------------------------------|--------------|----------------|
+| {"Sku":"BAT-418"}                  | get_product  | ExecutedHidden |
+| {"Question":"what fits on EB-200"} | ProductGraph | ExecutedHidden |
+| {"Sku":"BAT-418"}                  | get_product  | ExecutedHidden |
+| {"Question":"what fits on EB-200"} | ProductGraph | ExecutedHidden |
+| {"Sku":"BAT-418"}                  | GetProduct   | ExecutedHidden |
+(5 rows)
+
+-- select ServerName from GenAICommons.MCPSpan
+| ServerName |
+|------------|
+| SelfMcp    |
+| SelfMcp    |
+(2 rows)
+
+-- select count(*) as traces from GenAICommons.Trace
+| traces |
+|--------|
+| 6      |
+(1 rows)
+
+-- select count(*) as spans from GenAICommons.Span
+| spans |
+|-------|
+| 16    |
+(1 rows)
+
+-- select count(*) as usage_rows, sum(InputTokens) as input_tokens, sum(OutputTokens) as output_tokens from GenAICommons.Usage
+| output_tokens | usage_rows | input_tokens |
+|---------------|------------|--------------|
+| 1372          | 13         | 8000         |
+(1 rows)
+
+-- select Subject, Category, Status from Helpdesk.Ticket
+| Status            | Category | Subject                   |
+|-------------------|----------|---------------------------|
+| Awaiting approval | Other    | Battery arrived defective |
+| Awaiting approval | Warranty | Battery arrived defective |
+| Awaiting approval | Warranty | Battery arrived defective |
+(3 rows)
+
+-- select Name from System.WorkflowUserTask
