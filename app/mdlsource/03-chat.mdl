@@ -1,0 +1,83 @@
+mdl 1;
+
+-- 03 Chat: a Conversational UI page wired to HelpdeskAgent, in the navigation menu.
+-- Helpdesk.ChatUseOpenRouter = true swaps the agent's Mendix Cloud model for the registered OpenRouter model
+-- (used for verification when no Mendix Cloud text key is available). Run after 02 and 09.
+
+create or modify constant Helpdesk.ChatUseOpenRouter (Type: Boolean, DefaultValue: false);
+
+/** The user's empty chat for HelpdeskAgent, or a new one (a ChatContext is persistent: resume, do not pile up). */
+create or modify microflow Helpdesk.Chat_GetCreate ()
+returns ConversationalUI.ChatContext as $Chat
+begin
+  retrieve $Agent from AgentCommons.Agent where _QualifiedName = 'Helpdesk.HelpdeskAgent' first;
+  if $Agent = empty then
+    log error node 'Chat' 'HelpdeskAgent is not imported (is ASU_AgentEditor running?)';
+    return empty;
+  end if;
+  retrieve $Existing from ConversationalUI.ChatContext
+    where [System.owner = $currentUser]
+    [not(ConversationalUI.Message_ChatContext/ConversationalUI.Message)]
+    [ConversationalUI.ChatContext_Agent = $Agent]
+    first;
+  if $Existing != empty then
+    return $Existing;
+  end if;
+  if @Helpdesk.ChatUseOpenRouter then
+    retrieve $Override from GenAICommons.DeployedModel where Architecture = 'OpenRouter' first;
+    $Swapped = call java action AgentCommons.ChatContext_Create_ForAgent(
+      Agent = $Agent,
+      ActionMicroflow = 'ConversationalUI.ChatContext_ChatWithHistory_ActionMicroflow_Agent_Runtime',
+      ContextObject = empty,
+      OverwritingDeployedModel = $Override
+    );
+    return $Swapped;
+  end if;
+  $New = call java action AgentCommons.ChatContext_Create_ForAgent(
+    Agent = $Agent,
+    ActionMicroflow = 'ConversationalUI.ChatContext_ChatWithHistory_ActionMicroflow_Agent_Runtime',
+    ContextObject = empty,
+    OverwritingDeployedModel = empty
+  );
+  return $New;
+end;
+
+/** Verification shim for when no Mendix Cloud text key exists: put the OpenRouter model on HelpdeskAgent's in-use
+    version (the imported version has none, so every chat would stop at "Select a model on the agent version in use").
+    Does nothing unless Helpdesk.ChatUseOpenRouter is true. ASU_AgentEditor re-imports the agent on every start. */
+create or modify microflow Helpdesk.Chat_UseOpenRouterModel ()
+begin
+  if not(@Helpdesk.ChatUseOpenRouter) then
+    return;
+  end if;
+  retrieve $Agent from AgentCommons.Agent where _QualifiedName = 'Helpdesk.HelpdeskAgent' first;
+  retrieve $Model from GenAICommons.DeployedModel where Architecture = 'OpenRouter' first;
+  if $Agent = empty or $Model = empty then
+    log warning node 'Chat' 'OpenRouter shim skipped: agent or OpenRouter model missing';
+    return;
+  end if;
+  retrieve $Version from $Agent/AgentCommons.Agent_Version_InUse;
+  change $Version (AgentCommons.Version_DeployedModel = $Model);
+  commit $Version;
+end;
+
+create or modify page Helpdesk.Chat (
+  Title: 'Helpdesk chat',
+  Layout: MyFirstModule.App_Default,
+  PopupResizable: true
+) {
+  container chatHost (Class: 'chat-page--fullheight-centered') {
+    dataview chatView (
+      DataSource: microflow Helpdesk.Chat_GetCreate,
+      FormOrientation: Vertical,
+      ReadOnlyStyle: Control,
+      Class: 'chat-dataview--display-contents'
+    ) {
+      container chatCard (Class: 'card chat-container') {
+        snippetcall chatSnippet (Snippet: ConversationalUI.Snippet_ChatContext_ConversationalUI)
+      }
+    }
+  }
+};
+
+-- the menu item lives in 11-navigation.mdl (ALTER NAVIGATION INSERT is not idempotent)

@@ -1,0 +1,132 @@
+mdl 1;
+
+-- 04 Vector DB: PgVector knowledge base 'policies' in the app's own Postgres.
+-- Needs per run: Encryption.EncryptionKey (32 chars) and Helpdesk.EmbeddingsKey (Mendix Cloud embeddings key).
+-- The vector extension is created by the app (DatabaseConfiguration_CreateExtension; pgvector is a trusted extension).
+
+create or modify constant Helpdesk.PgVectorJdbcUrl (Type: String, DefaultValue: 'jdbc:postgresql://localhost:5432/bikehelpdesk');
+create or modify constant Helpdesk.PgVectorUser (Type: String, DefaultValue: 'mendix');
+create or modify constant Helpdesk.PgVectorPassword (Type: String, DefaultValue: 'mendix');
+
+/** One policy text. The chunk source: each row becomes one chunk in the PgVector knowledge base. */
+create or modify persistent entity Helpdesk.Policy (
+  Title: String(100) not null unique,
+  Body: String(2000)
+)
+index (Title);
+
+create or modify microflow Helpdesk.Policy_Upsert (
+  $Title: String,
+  $Body: String
+)
+returns Helpdesk.Policy as $Result
+begin
+  retrieve $Existing from Helpdesk.Policy where Title = $Title first;
+  if $Existing = empty then
+    $Created = create Helpdesk.Policy (Title = $Title, Body = $Body);
+    commit $Created;
+    return $Created;
+  end if;
+  change $Existing (Body = $Body);
+  commit $Existing;
+  return $Existing;
+end;
+
+create or modify microflow Helpdesk.Policy_Seed ()
+begin
+  $Returns = call microflow Helpdesk.Policy_Upsert(Title = 'Returns', Body = 'Unused products can be returned within 30 days of delivery for a full refund. Batteries must be returned in their original packaging.');
+  $Warranty = call microflow Helpdesk.Policy_Upsert(Title = 'Warranty', Body = 'E-bike frames and motors carry a 5 year warranty. Batteries carry a 2 year warranty or 500 charge cycles, whichever comes first.');
+  $Shipping = call microflow Helpdesk.Policy_Upsert(Title = 'Shipping', Body = 'Orders over 100 euro ship free within the EU in 3 to 5 working days. Batteries ship by ground freight only.');
+end;
+
+/** The PgVector connection to the app's own database; created once, password encrypted by the module. */
+create or modify microflow Helpdesk.PolicyKB_GetCreateConfiguration ()
+returns PgVectorKnowledgeBase.DatabaseConfiguration as $Result
+begin
+  retrieve $Existing from PgVectorKnowledgeBase.DatabaseConfiguration where DisplayName = 'HelpdeskPgVector' first;
+  if $Existing != empty then
+    return $Existing;
+  end if;
+  $New = create PgVectorKnowledgeBase.DatabaseConfiguration (
+    DisplayName = 'HelpdeskPgVector',
+    JdbcURL = @Helpdesk.PgVectorJdbcUrl,
+    Username = @Helpdesk.PgVectorUser
+  );
+  $Password = call microflow PgVectorKnowledgeBase.DatabasePassword_GetCreate(DatabaseConfiguration = $New);
+  change $Password (Password = @Helpdesk.PgVectorPassword);
+  call microflow PgVectorKnowledgeBase.DatabaseConfiguration_Commit(DatabaseConfiguration = $New);
+  return $New;
+end;
+
+/** Embed the 3 policy texts and store them as chunks in the 'policies' knowledge base. */
+create or modify microflow Helpdesk.PolicyKB_Load ()
+returns Boolean
+begin
+  retrieve $Model from GenAICommons.DeployedModel
+    where OutputModality = GenAICommons.ENUM_ModelModality.Embeddings
+    first;
+  if $Model = empty then
+    log error node 'PolicyKB' 'No embeddings model registered (is Helpdesk.EmbeddingsKey set?)';
+    return false;
+  end if;
+  $Config = call microflow Helpdesk.PolicyKB_GetCreateConfiguration();
+  $ExtensionOk = call microflow PgVectorKnowledgeBase.DatabaseConfiguration_CreateExtension(DatabaseConfiguration = $Config);
+  if not($ExtensionOk) then
+    log error node 'PolicyKB' 'CREATE EXTENSION vector failed';
+    return false;
+  end if;
+  retrieve $Policies from Helpdesk.Policy;
+  $Chunks = call microflow GenAICommons.ChunkCollection_Create();
+  loop $Policy in $Policies
+  begin
+    $Chunk = call java action GenAICommons.ChunkCollection_AddKnowledgeBaseChunk(
+      ChunkCollection = $Chunks,
+      InputText = $Policy/Body,
+      HumanReadableID = $Policy/Title,
+      MxObject = $Policy,
+      MetadataCollection = empty
+    );
+  end loop;
+  $Embedded = call java action GenAICommons.Embeddings_ChunkCollection(
+    DeployedModel = $Model,
+    ChunkCollection = $Chunks,
+    EmbeddingsOptions = empty
+  );
+  $Kb = call microflow PgVectorKnowledgeBase.PgVectorKnowledgeBase_GetOrCreate(DatabaseConfiguration = $Config, KnowledgeBaseName = 'policies');
+  $Stored = call microflow PgVectorKnowledgeBase.ChunkCollection_Replace(ChunkCollection = $Chunks, DeployedKnowledgeBase = $Kb);
+  if not($Stored) then
+    log error node 'PolicyKB' 'ChunkCollection_Replace returned false';
+  end if;
+  return $Stored;
+end;
+
+/** Nearest policy chunks for a question, as plain text (top 3, most similar first). */
+create or modify microflow Helpdesk.Policy_Search (
+  $Question: String
+)
+returns String as $Answer
+begin
+  retrieve $Model from GenAICommons.DeployedModel
+    where OutputModality = GenAICommons.ENUM_ModelModality.Embeddings
+    first;
+  if $Model = empty then
+    return 'No embeddings model registered.';
+  end if;
+  $Config = call microflow Helpdesk.PolicyKB_GetCreateConfiguration();
+  $Kb = call microflow PgVectorKnowledgeBase.PgVectorKnowledgeBase_GetOrCreate(DatabaseConfiguration = $Config, KnowledgeBaseName = 'policies');
+  $Response = call microflow GenAICommons.Embeddings_String(DeployedModel = $Model, InputText = $Question, EmbeddingsOptions = empty);
+  $Vector = call microflow GenAICommons.EmbeddingsResponse_GetFirstVector(EmbeddingsResponse = $Response);
+  $Hits = call microflow PgVectorKnowledgeBase.KnowledgeBaseChunkList_RetrieveNearestNeighbors(
+    Vector = $Vector,
+    MinimumSimilarity = 0.0,
+    MaxNumberOfResults = 3,
+    DeployedKnowledgeBase = $Kb,
+    MetadataCollection = empty
+  );
+  declare $Out String = '';
+  loop $Hit in $Hits
+  begin
+    set $Out = $Out + '[' + $Hit/HumanReadableID + '] ' + $Hit/InputText + ' ';
+  end loop;
+  return trim($Out);
+end;

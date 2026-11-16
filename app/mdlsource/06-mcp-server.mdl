@@ -1,0 +1,53 @@
+mdl 1;
+
+-- 06 MCP server: Tool_GetProduct published over the MCP Server module (served at /helpdesk/mcp).
+-- Simple auth: a shared token in the X-Api-Token header. Empty token = every request refused.
+-- Give the token per run: --constant Helpdesk.McpToken=@env:HELPDESK_MCP_TOKEN
+
+create or modify constant Helpdesk.McpToken (Type: String, DefaultValue: '');
+
+/** The service account MCP tools run as (security is Off in this smoke test, so it only needs to exist). */
+create or modify microflow Helpdesk.MCP_EnsureUser ()
+begin
+  retrieve $Existing from System.User where Name = 'mcp_service' first;
+  if $Existing = empty then
+    $Created = create System.User (Name = 'mcp_service', Password = @Helpdesk.McpToken, Active = true);
+    commit $Created;
+  end if;
+end;
+
+create or modify microflow Helpdesk.MCP_Authenticate (
+  $HttpRequest: System.HttpRequest,
+  $McpServer: MCPServer.McpServer
+)
+returns System.User as $User
+begin
+  if @Helpdesk.McpToken = '' then
+    return empty;
+  end if;
+  retrieve $Headers from $HttpRequest/System.HttpHeaders;
+  $Token = find $Headers by Key = 'X-Api-Token';
+  if $Token = empty then
+    return empty;
+  end if;
+  if $Token/Value != @Helpdesk.McpToken then
+    return empty;
+  end if;
+  -- the user the tools run as; created at startup by MCP_EnsureUser (creating it here races between parallel requests)
+  retrieve $User from System.User where Name = 'mcp_service' first;
+  return $User;
+end;
+
+create or modify published mcp service Helpdesk.HelpdeskMCP (
+  EndpointPath: 'helpdesk',
+  Version: '1.0.0',
+  ProtocolVersion: v2025_03_26,
+  AuthenticationEnabled: true,
+  AuthenticationMicroflow: Helpdesk.MCP_Authenticate
+) {
+  tool get_product (
+    Microflow: Helpdesk.Tool_GetProduct,
+    Description: 'Look up one bike shop product by Sku (for example BAT-418) and return its name, kind and price in euro.',
+    Schema: '{"type":"object","properties":{"Sku":{"type":"string","description":"Product Sku, e.g. BAT-418"}},"required":["Sku"]}'
+  )
+};

@@ -1,10 +1,59 @@
 mdl 1;
 
--- 10 After-startup: one composer, extended by later scripts.
+-- 10 After-startup: one composer. Every step logs and carries on, so a missing key never stops the runtime.
+-- Run after 01..09.
+
+create or modify microflow Helpdesk.ASU_Registrations ()
+begin
+  -- Mendix Cloud GenAI text, knowledge base and embeddings resources (empty key = skipped)
+  if @Helpdesk.GenAIKey != '' then
+    $Text = call microflow MxGenAIConnector.Configuration_RegisterByString(ConfigurationStringImport = @Helpdesk.GenAIKey)
+      on error without rollback begin
+        log error node 'Helpdesk' 'Registering Helpdesk.GenAIKey failed';
+      end error;
+  end if;
+  if @Helpdesk.KBKey != '' then
+    $Kb = call microflow MxGenAIConnector.Configuration_RegisterByString(ConfigurationStringImport = @Helpdesk.KBKey)
+      on error without rollback begin
+        log error node 'Helpdesk' 'Registering Helpdesk.KBKey failed';
+      end error;
+  end if;
+  if @Helpdesk.EmbeddingsKey != '' then
+    $Emb = call microflow MxGenAIConnector.Configuration_RegisterByString(ConfigurationStringImport = @Helpdesk.EmbeddingsKey)
+      on error without rollback begin
+        log error node 'Helpdesk' 'Registering Helpdesk.EmbeddingsKey failed';
+      end error;
+  end if;
+  $OpenRouter = call microflow Helpdesk.OpenRouter_Register()
+    on error without rollback begin
+      log error node 'Helpdesk' 'OpenRouter registration failed';
+    end error;
+end;
+
 create or modify microflow Helpdesk.ASU_Startup ()
 returns Boolean
 begin
   call microflow Helpdesk.ASU_SeedProducts();
+  call microflow Helpdesk.Policy_Seed();
+  call microflow Helpdesk.MCP_EnsureUser();
+  call microflow Helpdesk.ASU_Registrations();
+  -- imports the Agent Editor documents (model, KB, MCP, agent) and starts the published MCP server
+  $Imported = call microflow AgentEditorCommons.ASU_AgentEditor()
+    on error without rollback begin
+      log error node 'Helpdesk' 'ASU_AgentEditor failed';
+    end error;
+  call microflow Helpdesk.Chat_UseOpenRouterModel()
+    on error without rollback begin
+      log error node 'Helpdesk' 'OpenRouter model shim failed';
+    end error;
+  $RuntimeAgent = call microflow Helpdesk.RuntimeAgent_Seed()
+    on error without rollback begin
+      log error node 'Helpdesk' 'Seeding the runtime agent failed';
+    end error;
+  $Loaded = call microflow Helpdesk.PolicyKB_Load()
+    on error without rollback begin
+      log error node 'Helpdesk' 'Loading the policy knowledge base failed';
+    end error;
   return true;
 end;
 

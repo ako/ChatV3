@@ -1,0 +1,10 @@
+mdl 1;
+
+-- 11 Navigation: the whole menu in one idempotent statement (ALTER NAVIGATION INSERT would duplicate on re-run).
+create or modify navigation Responsive
+  app title 'BikeHelpdesk'
+  app icon Atlas_Core.Content.Mendix
+  home page Helpdesk.Chat
+{
+  menu item 'Helpdesk chat' ( OnClick: show page Helpdesk.Chat, Icon: glyph 57377 )
+};
