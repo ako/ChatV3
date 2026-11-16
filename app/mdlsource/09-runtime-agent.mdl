@@ -1,0 +1,139 @@
+mdl 1;
+
+-- 09 Runtime agent: one Agent Commons agent (an AgentCommons.Agent object, not an Agent Editor document)
+-- on OpenRouter with a free model and Tool_GetProduct.
+-- Needs per run: Helpdesk.OpenRouterKey (--constant Helpdesk.OpenRouterKey=@env:OPENROUTER_KEY) and Encryption.EncryptionKey.
+
+create or modify constant Helpdesk.OpenRouterEndpoint (Type: String, DefaultValue: 'https://openrouter.ai/api/v1');
+create or modify constant Helpdesk.OpenRouterModel (Type: String, DefaultValue: 'nvidia/nemotron-3.5-lightning:free');
+
+/** Context object for the runtime agent: its attribute fills the {{Question}} prompt variable. */
+create or modify non-persistent entity Helpdesk.AgentQuestion (
+  Question: String(2000)
+);
+
+/** Registers OpenRouter as an OpenAI-compatible endpoint and its free model. Safe to run on every start. */
+create or modify microflow Helpdesk.OpenRouter_Register ()
+returns Boolean
+begin
+  if @Helpdesk.OpenRouterKey = '' then
+    log warning node 'OpenRouter' 'Helpdesk.OpenRouterKey is empty: OpenRouter agent not registered';
+    return false;
+  end if;
+  retrieve $Existing from OpenAIConnector.Configuration where DisplayName = 'OpenRouter' first;
+  if $Existing != empty then
+    return true;
+  end if;
+  $Configuration = call microflow OpenAIConnector.Configuration_Create();
+  change $Configuration (DisplayName = 'OpenRouter', ApiType = OpenAIConnector.ENUM_ApiType.OpenAI, Endpoint = @Helpdesk.OpenRouterEndpoint, IsNativeOpenAI = false);
+  $ApiKey = call microflow OpenAIConnector.ApiKey_GetCreate_Configuration(Configuration = $Configuration);
+  change $ApiKey (ApiKey = @Helpdesk.OpenRouterKey);
+  call microflow OpenAIConnector.Configuration_Commit(Configuration = $Configuration)
+    on error without rollback begin
+      log error node 'OpenRouter' 'Could not store the key: is Encryption.EncryptionKey set (32 characters)?';
+      return false;
+    end error;
+  $InputModalities = create list of GenAICommons.InputModality;
+  $Model = call microflow OpenAIConnector.OpenAIDeployedModel_Create(
+    Configuration = $Configuration,
+    Model = @Helpdesk.OpenRouterModel,
+    Architecture = 'OpenRouter',
+    OutputModality = GenAICommons.ENUM_ModelModality.Text,
+    ApiVersion = empty,
+    DisplayName = 'OpenRouter free model',
+    SupportsSystemPrompt = GenAICommons.ENUM_ModelSupport._True,
+    SupportsFunctionCalling = GenAICommons.ENUM_ModelSupport._True,
+    SupportsConversationHistory = GenAICommons.ENUM_ModelSupport._True,
+    InputModalityList = $InputModalities,
+    SupportsStreaming = GenAICommons.ENUM_ModelSupport._False
+  );
+  if $Model = empty then
+    return false;
+  end if;
+  call microflow GenAICommons.DeployedModel_Commit(DeployedModel = $Model);
+  return true;
+end;
+
+/** Seeds the runtime agent from JSON (matched on Title; a changed JSON needs a new Title). */
+create or modify microflow Helpdesk.RuntimeAgent_Seed ()
+returns AgentCommons.Agent as $Agent
+begin
+  $Agent = call microflow AgentCommons.Agent_GetCreate_Json(AgentTitle = 'OpenRouter Product Agent', AgentJson = '{
+    "Title": "OpenRouter Product Agent",
+    "Description": "Answers product price questions with the GetProduct tool, on an OpenRouter free model.",
+    "UsageType": "Single_Call",
+    "Entity": "Helpdesk.AgentQuestion",
+    "UUID": "6b0d2f5e-2d0e-4a53-9a43-0a6f6a3c1b01",
+    "Versions": [
+      {
+        "Title": "First version",
+        "SystemPrompt": "You are a bike shop assistant. Always call the GetProduct tool to look up a product by Sku before you answer, and quote the price exactly as the tool returns it.",
+        "UserPrompt": "{{Question}}",
+        "VersionNumber": 1,
+        "UUID": "6b0d2f5e-2d0e-4a53-9a43-0a6f6a3c1b02",
+        "VersionChangedDate": "2026-11-16T09:00:00.000Z",
+        "DeployedModel": { "Architecture": "OpenRouter", "Model": "nvidia/nemotron-3.5-lightning:free" },
+        "Tools": [
+          {
+            "Name": "GetProduct",
+            "Description": "Look up one product by Sku and return name, kind and price in euro.",
+            "Microflow": "Helpdesk.Tool_GetProduct",
+            "UserAccessApproval": "HiddenForUser",
+            "IsEnabled": true,
+            "UUID": "6b0d2f5e-2d0e-4a53-9a43-0a6f6a3c1b03"
+          }
+        ]
+      }
+    ],
+    "Variables": [ { "Key": "Question" } ],
+    "Version_InUse": { "UUID": "6b0d2f5e-2d0e-4a53-9a43-0a6f6a3c1b02" }
+  }');
+  return $Agent;
+end;
+
+/** Ask the runtime agent one question; returns its answer text. */
+create or modify microflow Helpdesk.RuntimeAgent_Ask (
+  $Question: String
+)
+returns String as $Answer
+begin
+  retrieve $Agent from AgentCommons.Agent where Title = 'OpenRouter Product Agent' first;
+  if $Agent = empty then
+    return 'The OpenRouter agent is not registered.';
+  end if;
+  $Context = create Helpdesk.AgentQuestion (Question = $Question);
+  $Response = call java action AgentCommons.Agent_Call_WithoutHistory(
+    Agent = $Agent,
+    OptionalContextObject = $Context,
+    OptionalRequest = empty,
+    OptionalFileCollection = empty
+  );
+  $Text = call microflow GenAICommons.Response_GetModelResponseString(Response = $Response);
+  return $Text;
+end;
+
+create or modify microflow Helpdesk.ACT_RuntimeAgent (
+  $Ask: Helpdesk.Ask
+)
+begin
+  $Text = call microflow Helpdesk.RuntimeAgent_Ask(Question = $Ask/Question);
+  change $Ask (Answer = $Text);
+end;
+
+create or modify page Helpdesk.RuntimeAgent_Page (
+  Title: 'OpenRouter agent',
+  Layout: MyFirstModule.App_Default
+) {
+  layoutgrid RuntimeAgentGrid {
+    row {
+      column (DesktopWidth: AutoFill) {
+        dynamictext RuntimeAgentHeading (Content: 'OpenRouter agent with the GetProduct tool', RenderMode: H2)
+        dataview RuntimeAgentView (DataSource: microflow Helpdesk.Ask_New) {
+          textbox RuntimeAgentQuestion (Label: 'Question (name a SKU, e.g. BAT-418)', Attribute: Question)
+          actionbutton RuntimeAgentGo (Caption: 'Ask', Action: call microflow Helpdesk.ACT_RuntimeAgent(Ask = $currentObject), ButtonStyle: Primary)
+          textarea RuntimeAgentAnswer (Label: 'Answer', Attribute: Answer, Editable: Never)
+        }
+      }
+    }
+  }
+};

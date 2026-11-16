@@ -1,0 +1,15 @@
+# External MCP client (curl) against http://localhost:8080/helpdesk/mcp
+## without a token
+HTTP 401
+## initialize
+data: {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26","capabilities":{"logging":{},"prompts":{"listChanged":true},"tools":{"listChanged":true}},"serverInfo":{"name":"HelpdeskMCP","version":"1.0.0"}}}
+
+
+## tools/list
+data: {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"get_product","description":"Look up one bike shop product by Sku (for example BAT-418) and return its name, kind and price in euro.","inputSchema":{"type":"object","properties":{"Sku":{"type":"string","description":"Product Sku, e.g. BAT-418"}},"required":["Sku"]}}]}}
+
+
+## tools/call get_product {Sku: BAT-418}
+data: {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"BAT-418 | Battery 36V 418Wh | Battery | price EUR 349"}],"isError":false}}
+
+

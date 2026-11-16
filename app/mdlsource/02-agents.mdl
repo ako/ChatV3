@@ -1,0 +1,71 @@
+mdl 1;
+
+-- 02 Agent Editor documents. Run after 01 and 05 (the agent's tools live there).
+-- Keys are constants; give them per run with `--constant Helpdesk.GenAIKey=@env:MX_GENAI_KEY`.
+
+create or modify constant Helpdesk.GenAIKey (Type: String, DefaultValue: '');
+create or modify constant Helpdesk.KBKey (Type: String, DefaultValue: '');
+create or modify constant Helpdesk.EmbeddingsKey (Type: String, DefaultValue: '');
+create or modify constant Helpdesk.OpenRouterKey (Type: String, DefaultValue: '');
+/** The MCP server the agent calls: this app's own published service (see 06). */
+create or modify constant Helpdesk.McpEndpoint (Type: String, DefaultValue: 'http://localhost:8080/helpdesk/mcp');
+
+create or modify ai model Helpdesk.HelpdeskModel (
+  Provider: MxCloudGenAI,
+  key: @Helpdesk.GenAIKey
+);
+
+create or modify knowledge base Helpdesk.PolicyKB (
+  Provider: MxCloudGenAI,
+  key: @Helpdesk.KBKey
+);
+
+create or modify consumed mcp service Helpdesk.SelfMcp (
+  ProtocolVersion: v2025_03_26,
+  Endpoint: @Helpdesk.McpEndpoint,
+  version: '1.0',
+  ConnectionTimeoutSeconds: 30,
+  documentation: 'This app''s own published MCP server (06), consumed back by the agent (07).'
+);
+
+create or modify agent Helpdesk.HelpdeskAgent (
+  UsageType: Chat,
+  model: Helpdesk.HelpdeskModel,
+  SelectedModel: 'eu.anthropic.claude-sonnet-5',
+  description: 'Answers bike shop helpdesk questions from the product catalogue and policies.',
+  MaxTokens: 2000,
+  Temperature: 0.1,
+  ToolChoice: Auto,
+  SystemPrompt: $$You are the helpdesk assistant of a bike shop.
+Always use tools instead of guessing:
+- GetProduct(Sku): price, name and kind of one product.
+- ProductGraph(Question): which products are compatible with a SKU (pass the SKU, e.g. "EB-200").
+- the policies knowledge base for returns, warranty and shipping questions.
+Quote prices exactly as the tools return them, in euro. Keep answers short.$$,
+  UserPrompt: 'How can I help?'
+)
+{
+  tool GetProduct (
+    Document: Helpdesk.Tool_GetProduct,
+    description: 'Look up one product by Sku and return name, kind and price in euro.',
+    Enabled: true
+  )
+
+  tool ProductGraph (
+    Document: Helpdesk.Tool_ProductGraph,
+    description: 'Ask the product graph (SPARQL over the product table). Pass a SKU such as EB-200 to list the products that are compatible with it; returns JSON rows with sku, name, kind, price.',
+    Enabled: true
+  )
+
+  knowledge base Policies (
+    source: Helpdesk.PolicyKB,
+    collection: 'policies',
+    MaxResults: 3,
+    description: 'Return, warranty and shipping policies.',
+    Enabled: true
+  )
+
+  mcp service Helpdesk.SelfMcp (
+    Enabled: true
+  )
+};

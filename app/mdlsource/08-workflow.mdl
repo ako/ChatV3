@@ -1,0 +1,147 @@
+mdl 1;
+
+-- 08 Agent in a workflow: step 1 is an AI step (HelpdeskAgent classifies the ticket), step 2 a user task (approve).
+
+/** A helpdesk ticket: the workflow's context object. */
+create or modify persistent entity Helpdesk.Ticket (
+  Subject: String(200) not null,
+  Body: String(2000),
+  Category: String(50),
+  Status: String(30)
+);
+
+/** Map the agent's free-text answer onto one of four categories. */
+create or modify microflow Helpdesk.Ticket_CategoryFromText (
+  $Text: String
+)
+returns String as $Category
+begin
+  declare $Lower String = toLowerCase($Text);
+  if contains($Lower, 'return') or contains($Lower, 'refund') then
+    return 'Returns';
+  end if;
+  if contains($Lower, 'warranty') or contains($Lower, 'defect') or contains($Lower, 'broken') then
+    return 'Warranty';
+  end if;
+  if contains($Lower, 'shipping') or contains($Lower, 'delivery') then
+    return 'Shipping';
+  end if;
+  if contains($Lower, 'technical') or contains($Lower, 'battery') or contains($Lower, 'motor') then
+    return 'Technical';
+  end if;
+  return 'Other';
+end;
+
+/** The AI step: ask HelpdeskAgent for the category of the ticket and store it. Returns true when the agent answered. */
+create or modify microflow Helpdesk.Ticket_Classify (
+  $Ticket: Helpdesk.Ticket
+)
+returns Boolean as $Answered
+begin
+  retrieve $Agent from AgentCommons.Agent where _QualifiedName = 'Helpdesk.HelpdeskAgent' first;
+  if $Agent = empty then
+    change $Ticket (Category = 'Unclassified', Status = 'Classification failed');
+    commit $Ticket;
+    return false;
+  end if;
+  $Request = call microflow GenAICommons.Request_Create(SystemPrompt = 'You classify bike shop helpdesk tickets. Reply with exactly one word from: Returns, Warranty, Shipping, Technical, Other.', Temperature = 0.0, MaxTokens = empty, TopP = empty, ID = empty);
+  $Message = call microflow GenAICommons.Request_AddMessage(Request = $Request, ENUM_MessageRole = GenAICommons.ENUM_MessageRole.user, FileCollection = empty, ContentString = 'Subject: ' + $Ticket/Subject + '. ' + $Ticket/Body);
+  $Response = call java action AgentCommons.Agent_Call_WithHistory(Agent = $Agent, Request = $Request, OptionalContextObject = empty)
+    on error without rollback begin
+      log error node 'Ticket' 'HelpdeskAgent call failed';
+      change $Ticket (Category = 'Unclassified', Status = 'Classification failed');
+      commit $Ticket;
+      return false;
+    end error;
+  $Text = call microflow GenAICommons.Response_GetModelResponseString(Response = $Response);
+  $Category = call microflow Helpdesk.Ticket_CategoryFromText(Text = $Text);
+  change $Ticket (Category = $Category, Status = 'Awaiting approval');
+  commit $Ticket;
+  return true;
+end;
+
+/** The user's two outcomes. A task must be claimed before it can be completed. */
+create or modify microflow Helpdesk.ACT_Task_Approve (
+  $Task: System.WorkflowUserTask
+)
+begin
+  change $Task (System.WorkflowUserTask_Assignees = [%CurrentUser%]);
+  commit $Task;
+  set task outcome $Task 'Approve';
+end;
+
+create or modify microflow Helpdesk.ACT_Task_Reject (
+  $Task: System.WorkflowUserTask
+)
+begin
+  change $Task (System.WorkflowUserTask_Assignees = [%CurrentUser%]);
+  commit $Task;
+  set task outcome $Task 'Reject';
+end;
+
+create or modify page Helpdesk.Ticket_ApproveTask (
+  Title: 'Approve ticket',
+  Layout: MyFirstModule.App_Default,
+  Params: ( $WorkflowUserTask: System.WorkflowUserTask )
+) {
+  dataview taskView (DataSource: $WorkflowUserTask) {
+    dynamictext taskName (Content: 'Task: {1}', ContentParams: ( {1} = $currentObject/Name ), RenderMode: H3)
+    actionbutton btnApprove (Caption: 'Approve', Action: call microflow Helpdesk.ACT_Task_Approve(Task = $currentObject), ButtonStyle: Success)
+    actionbutton btnReject (Caption: 'Reject', Action: call microflow Helpdesk.ACT_Task_Reject(Task = $currentObject), ButtonStyle: Danger)
+  }
+};
+
+create or modify workflow Helpdesk.TicketApproval
+  parameter $Context: Helpdesk.Ticket
+  display 'Ticket {1}' with ({1} = $Context/Subject)
+begin
+  call agent microflow Helpdesk.Ticket_Classify(Ticket = $WorkflowContext) as classify
+    caption 'Classify with HelpdeskAgent';
+  user task Approve 'Approve ticket'
+    page Helpdesk.Ticket_ApproveTask
+    targeting users xpath [Name = 'helpdesk']
+    auto assign single user
+    outcomes 'Approve' { } 'Reject' { };
+end workflow;
+
+/** Save the ticket and start its workflow. */
+create or modify microflow Helpdesk.ACT_Ticket_Submit (
+  $Ticket: Helpdesk.Ticket
+)
+begin
+  change $Ticket (Status = 'Submitted');
+  commit $Ticket;
+  $Workflow = call workflow Helpdesk.TicketApproval($Ticket);
+  close page;
+end;
+
+create or modify page Helpdesk.Ticket_NewEdit (
+  Title: 'New ticket',
+  Layout: MyFirstModule.App_Default,
+  Params: ( $Ticket: Helpdesk.Ticket )
+) {
+  dataview ticketView (DataSource: $Ticket) {
+    textbox tbSubject (Label: 'Subject', Attribute: Subject)
+    textarea taBody (Label: 'Description', Attribute: Body)
+    actionbutton btnSubmit (Caption: 'Submit ticket', Action: call microflow Helpdesk.ACT_Ticket_Submit(Ticket = $currentObject), ButtonStyle: Primary)
+  }
+};
+
+create or modify microflow Helpdesk.ACT_Ticket_New ()
+begin
+  $New = create Helpdesk.Ticket (Status = 'New');
+  show page Helpdesk.Ticket_NewEdit(Ticket = $New);
+end;
+
+create or modify page Helpdesk.Ticket_Overview (
+  Title: 'Tickets',
+  Layout: MyFirstModule.App_Default
+) {
+  dynamictext heading (Content: 'Tickets', RenderMode: H2)
+  actionbutton btnNew (Caption: 'New ticket', Action: call microflow Helpdesk.ACT_Ticket_New, ButtonStyle: Primary)
+  datagrid ticketGrid (DataSource: database Helpdesk.Ticket) {
+    column (Attribute: Subject, Caption: 'Subject')
+    column (Attribute: Category, Caption: 'Category (set by the AI step)')
+    column (Attribute: Status, Caption: 'Status')
+  }
+};

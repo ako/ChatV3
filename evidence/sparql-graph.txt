@@ -1,0 +1,3 @@
+Q: what fits on EB-200
+A: [{"sku":"LGT-100","name":"Headlight 100 lux","kind":"Light","price":"39.90000000"},{"sku":"BAT-418","name":"Battery 36V 418Wh","kind":"Battery","price":"349.00000000"},{"sku":"MOT-250","name":"Hub motor 250W","kind":"Motor","price":"499.00000000"},{"sku":"BRK-310","name":"Disc brake set 160mm","kind":"Brake","price":"89.50000000"}]
+x

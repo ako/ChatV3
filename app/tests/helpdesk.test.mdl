@@ -1,0 +1,50 @@
+/**
+ * @test Tool_GetProduct returns the BAT-418 price
+ * @expect $result = true
+ */
+$Text = call microflow Helpdesk.Tool_GetProduct(Sku = 'BAT-418');
+declare $result Boolean = false;
+set $result = contains($Text, 'Battery 36V 418Wh') and contains($Text, '349');
+/
+
+/**
+ * @test Tool_GetProduct reports an unknown Sku
+ * @expect $result = true
+ */
+$Text = call microflow Helpdesk.Tool_GetProduct(Sku = 'NOPE-000');
+declare $result Boolean = false;
+set $result = contains($Text, 'No product');
+/
+
+/**
+ * @test Seed holds 6 products and 3 policies, and a second seed adds nothing
+ * @expect $result = 9
+ */
+call microflow Helpdesk.ASU_SeedProducts();
+call microflow Helpdesk.Policy_Seed();
+retrieve $Products from Helpdesk.Product;
+retrieve $Policies from Helpdesk.Policy;
+$NProducts = count $Products;
+$NPolicies = count $Policies;
+declare $result Integer = 0;
+set $result = $NProducts + $NPolicies;
+/
+
+/**
+ * @test Category mapping: a defective battery is a Warranty ticket
+ * @expect $result = 'Warranty'
+ */
+$Cat = call microflow Helpdesk.Ticket_CategoryFromText(Text = 'This looks broken, I want warranty');
+declare $result String = '';
+set $result = $Cat;
+/
+
+/**
+ * @test PgVector: the nearest chunk for a return question is the Returns policy
+ * @expect $result = true
+ */
+$Loaded = call microflow Helpdesk.PolicyKB_Load();
+$Text = call microflow Helpdesk.Policy_Search(Question = 'How long do I have to return something?');
+declare $result Boolean = false;
+set $result = $Loaded and startsWith($Text, '[Returns]');
+/

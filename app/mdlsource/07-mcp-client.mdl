@@ -1,0 +1,15 @@
+mdl 1;
+
+-- 07 MCP client: the Consumed MCP Service (02) points at this app's own server (06).
+-- Endpoint is the Helpdesk.McpEndpoint constant; the auth microflow sends the same token.
+
+create or modify microflow Helpdesk.McpClientHeaders ()
+returns list of System.HttpHeader as $Headers
+begin
+  $Headers = create list of System.HttpHeader;
+  call microflow MCPClient.HttpHeader_CreateAndAddToList(HttpHeaderList = $Headers, Key = 'X-Api-Token', Value = @Helpdesk.McpToken);
+  return $Headers;
+end;
+
+alter consumed mcp service Helpdesk.SelfMcp
+  set AuthenticationMicroflow = Helpdesk.McpClientHeaders;

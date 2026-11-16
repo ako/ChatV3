@@ -1,0 +1,468 @@
+WARNING: This is a vibe-coded PoC, alpha quality, use with caution.
+Connected to: BikeHelpdesk.mpr (Mendix 11.16.1)
+Loading cached catalog (built 9s ago, full mode)...
+✓ Catalog ready (from cache)
+(no module)
+-----------
+  ℹ Module role 'MyFirstModule.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'MyFirstModule.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'Helpdesk.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'Helpdesk.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'GenAICommons.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'GenAICommons.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'GenAICommons.TraceMonitoring' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'GenAICommons.TraceMonitoring' and ensure a 1:1 mapping
+
+  ℹ Module role 'GenAICommons.UsageMonitoring' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'GenAICommons.UsageMonitoring' and ensure a 1:1 mapping
+
+  ℹ Module role 'MxGenAIConnector.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'MxGenAIConnector.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'AgentCommons.AgentAdmin' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'AgentCommons.AgentAdmin' and ensure a 1:1 mapping
+
+  ℹ Module role 'MCPClient.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'MCPClient.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'ConversationalUI.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'ConversationalUI.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'ConversationalUI.TraceMonitoring' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'ConversationalUI.TraceMonitoring' and ensure a 1:1 mapping
+
+  ℹ Module role 'ConversationalUI.UsageMonitoring' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'ConversationalUI.UsageMonitoring' and ensure a 1:1 mapping
+
+  ℹ Module role 'PgVectorKnowledgeBase.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'PgVectorKnowledgeBase.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'OpenAIConnector.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'OpenAIConnector.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'WorkflowCommons.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'WorkflowCommons.User' and ensure a 1:1 mapping
+
+  ℹ Module role 'Encryption.User' is mapped to 2 user roles: Administrator, User. Each module role should map to exactly one user role. [CONV008]
+      at ProjectSecurity
+      → Review the user role assignments for 'Encryption.User' and ensure a 1:1 mapping
+
+Helpdesk
+--------
+  ⚠ Microflow 'Helpdesk.ACT_Task_Approve' changes $Task and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.ACT_Task_Approve
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Task (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.ACT_Task_Reject' changes $Task and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.ACT_Task_Reject
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Task (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.ACT_Ticket_Submit' changes $Ticket and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.ACT_Ticket_Submit
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Ticket (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.ASU_SeedProducts' changes $Charger and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.ASU_SeedProducts
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Charger (…) commit;)
+
+  ⚠ Java action call in 'Helpdesk.Chat_GetCreate' uses 'Rollback' error handling instead of Custom. [CONV013]
+      at Helpdesk.Chat_GetCreate
+      → Set error handling to 'Custom with rollback' and add an error handler flow
+
+  ⚠ Java action call in 'Helpdesk.Chat_GetCreate' uses 'Rollback' error handling instead of Custom. [CONV013]
+      at Helpdesk.Chat_GetCreate
+      → Set error handling to 'Custom with rollback' and add an error handler flow
+
+  ⚠ Microflow 'Helpdesk.Chat_UseOpenRouterModel' changes $Version and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Chat_UseOpenRouterModel
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Version (…) commit;)
+
+  ℹ Module 'Helpdesk' keeps all 55 of its documents (29 microflows, 13 constant, 7 pages, and more) in the module root and has no folders. [CONV018]
+      at Helpdesk
+      → Group the documents into folders by feature or by type — `mxcli -p <app.mpr> -c "show structure in Helpdesk"` to see the current layout, then MOVE documents into folders. Set CONV018.options.max_root_documents in .claude/lint-config.yaml if a flat module is intended here.
+
+  ⚠ ACT_ microflow 'ACT_Graph' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Graph
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_Graph'
+
+  ⚠ ACT_ microflow 'ACT_Policy' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Policy
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_Policy'
+
+  ⚠ ACT_ microflow 'ACT_RuntimeAgent' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_RuntimeAgent
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_RuntimeAgent'
+
+  ⚠ ACT_ microflow 'ACT_Task_Approve' contains 'CommitObjectsAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Approve
+      → Move the 'CommitObjectsAction' action to a SUB_ microflow and call it from 'ACT_Task_Approve'
+
+  ⚠ ACT_ microflow 'ACT_Task_Approve' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Approve
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_Task_Approve'
+
+  ⚠ ACT_ microflow 'ACT_Task_Approve' contains 'SetTaskOutcomeAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Approve
+      → Move the 'SetTaskOutcomeAction' action to a SUB_ microflow and call it from 'ACT_Task_Approve'
+
+  ⚠ ACT_ microflow 'ACT_Task_Reject' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Reject
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_Task_Reject'
+
+  ℹ Microflow 'ACT_Task_Reject' has no documentation. [QUAL002]
+      at Helpdesk.ACT_Task_Reject
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ⚠ ACT_ microflow 'ACT_Task_Reject' contains 'SetTaskOutcomeAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Reject
+      → Move the 'SetTaskOutcomeAction' action to a SUB_ microflow and call it from 'ACT_Task_Reject'
+
+  ⚠ ACT_ microflow 'ACT_Task_Reject' contains 'CommitObjectsAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Task_Reject
+      → Move the 'CommitObjectsAction' action to a SUB_ microflow and call it from 'ACT_Task_Reject'
+
+  ⚠ ACT_ microflow 'ACT_Ticket_New' contains 'CreateObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Ticket_New
+      → Move the 'CreateObjectAction' action to a SUB_ microflow and call it from 'ACT_Ticket_New'
+
+  ⚠ ACT_ microflow 'ACT_Ticket_Submit' contains 'ChangeObjectAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Ticket_Submit
+      → Move the 'ChangeObjectAction' action to a SUB_ microflow and call it from 'ACT_Ticket_Submit'
+
+  ⚠ ACT_ microflow 'ACT_Ticket_Submit' contains 'CommitObjectsAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Ticket_Submit
+      → Move the 'CommitObjectsAction' action to a SUB_ microflow and call it from 'ACT_Ticket_Submit'
+
+  ⚠ ACT_ microflow 'ACT_Ticket_Submit' contains 'WorkflowCallAction' action. Delegate business logic to a SUB_ microflow. [CONV010]
+      at Helpdesk.ACT_Ticket_Submit
+      → Move the 'WorkflowCallAction' action to a SUB_ microflow and call it from 'ACT_Ticket_Submit'
+
+  ℹ Microflow 'ASU_Registrations' has no documentation. [QUAL002]
+      at Helpdesk.ASU_Registrations
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'ASU_Registrations' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.ASU_Registrations
+
+  ℹ Microflow 'ASU_SeedProducts' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.ASU_SeedProducts
+
+  ℹ Microflow 'ASU_SeedProducts' has 16 activities (convention max: 15). Split into sub-microflows. [CONV009]
+      at Helpdesk.ASU_SeedProducts
+      → Extract logical sections into SUB_ microflows to keep each under 15 activities
+
+  ℹ Microflow 'ASU_SeedProducts' has no documentation. [QUAL002]
+      at Helpdesk.ASU_SeedProducts
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'ASU_Startup' has no documentation. [QUAL002]
+      at Helpdesk.ASU_Startup
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'ASU_Startup' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.ASU_Startup
+
+  ℹ Microflow 'Ask_New' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Ask_New
+
+  ℹ Page 'Chat' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at Helpdesk.Chat
+      → Rename the page to include a suffix indicating its purpose, e.g., 'Chat_Overview'
+
+  ℹ Page 'Chat' has no documentation. [QUAL002]
+      at Helpdesk.Chat
+      → Describe what the page shows and who reaches it.
+
+  ℹ Page 'Helpdesk.Chat' is reachable from navigation (the home page of the 'Responsive' profile, the 'Helpdesk chat' menu item in the 'Responsive' profile) but has no URL, so it cannot be linked to or bookmarked. [CONV019]
+      at Helpdesk.Chat
+      → Give the page a URL — `Url: 'chat'` on CREATE PAGE, or the URL property in Studio Pro — so it is reachable at /p/chat. Disable CONV019 in .claude/lint-config.yaml if this app deliberately has no deep links.
+
+  ℹ Constant 'ChatUseOpenRouter' has no documentation. [QUAL002]
+      at Helpdesk.ChatUseOpenRouter
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Microflow 'Chat_GetCreate' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Chat_GetCreate
+
+  ℹ Microflow 'Chat_UseOpenRouterModel' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Chat_UseOpenRouterModel
+
+  ℹ Constant 'EmbeddingsKey' has no documentation. [QUAL002]
+      at Helpdesk.EmbeddingsKey
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'GenAIKey' has no documentation. [QUAL002]
+      at Helpdesk.GenAIKey
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Page 'Graph_Page' has no documentation. [QUAL002]
+      at Helpdesk.Graph_Page
+      → Describe what the page shows and who reaches it.
+
+  ℹ Page 'Helpdesk.Graph_Page' is reachable from navigation (the 'Product graph' menu item in the 'Responsive' profile) but has no URL, so it cannot be linked to or bookmarked. [CONV019]
+      at Helpdesk.Graph_Page
+      → Give the page a URL — `Url: 'graph_page'` on CREATE PAGE, or the URL property in Studio Pro — so it is reachable at /p/graph_page. Disable CONV019 in .claude/lint-config.yaml if this app deliberately has no deep links.
+
+  ℹ Page 'Graph_Page' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at Helpdesk.Graph_Page
+      → Rename the page to include a suffix indicating its purpose, e.g., 'Graph_Page_Overview'
+
+  ℹ Constant 'KBKey' has no documentation. [QUAL002]
+      at Helpdesk.KBKey
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Microflow 'MCP_Authenticate' has no documentation. [QUAL002]
+      at Helpdesk.MCP_Authenticate
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'MCP_Authenticate' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.MCP_Authenticate
+
+  ℹ Microflow 'MCP_EnsureUser' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.MCP_EnsureUser
+
+  ℹ Microflow 'McpClientHeaders' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.McpClientHeaders
+
+  ℹ Constant 'McpToken' has no documentation. [QUAL002]
+      at Helpdesk.McpToken
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'OpenRouterEndpoint' has no documentation. [QUAL002]
+      at Helpdesk.OpenRouterEndpoint
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'OpenRouterKey' has no documentation. [QUAL002]
+      at Helpdesk.OpenRouterKey
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'OpenRouterModel' has no documentation. [QUAL002]
+      at Helpdesk.OpenRouterModel
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Microflow 'OpenRouter_Register' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.OpenRouter_Register
+
+  ℹ Constant 'PgVectorJdbcUrl' has no documentation. [QUAL002]
+      at Helpdesk.PgVectorJdbcUrl
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'PgVectorPassword' has no documentation. [QUAL002]
+      at Helpdesk.PgVectorPassword
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Constant 'PgVectorUser' has no documentation. [QUAL002]
+      at Helpdesk.PgVectorUser
+      → Describe what the constant configures and what a valid value looks like — it is set per environment by someone who cannot see the code.
+
+  ℹ Entity 'Helpdesk.Policy' has 2 validation rule(s). Use VAL_ microflows for validation logic instead. [CONV015]
+      at Helpdesk.Policy
+      → Replace entity validation rules with a VAL_Policy microflow for explicit, testable validation
+
+  ℹ Microflow 'PolicyKB_GetCreateConfiguration' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.PolicyKB_GetCreateConfiguration
+
+  ℹ Microflow 'PolicyKB_Load' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.PolicyKB_Load
+
+  ℹ Page 'Policy_Page' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at Helpdesk.Policy_Page
+      → Rename the page to include a suffix indicating its purpose, e.g., 'Policy_Page_Overview'
+
+  ℹ Page 'Helpdesk.Policy_Page' is reachable from navigation (the 'Policy search' menu item in the 'Responsive' profile) but has no URL, so it cannot be linked to or bookmarked. [CONV019]
+      at Helpdesk.Policy_Page
+      → Give the page a URL — `Url: 'policy_page'` on CREATE PAGE, or the URL property in Studio Pro — so it is reachable at /p/policy_page. Disable CONV019 in .claude/lint-config.yaml if this app deliberately has no deep links.
+
+  ℹ Page 'Policy_Page' has no documentation. [QUAL002]
+      at Helpdesk.Policy_Page
+      → Describe what the page shows and who reaches it.
+
+  ℹ Microflow 'Policy_Search' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Policy_Search
+
+  ℹ Microflow 'Policy_Seed' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Policy_Seed
+
+  ℹ Microflow 'Policy_Seed' has no documentation. [QUAL002]
+      at Helpdesk.Policy_Seed
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'Policy_Upsert' has no documentation. [QUAL002]
+      at Helpdesk.Policy_Upsert
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'Policy_Upsert' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Policy_Upsert
+
+  ℹ Entity 'Helpdesk.Product' has 2 validation rule(s). Use VAL_ microflows for validation logic instead. [CONV015]
+      at Helpdesk.Product
+      → Replace entity validation rules with a VAL_Product microflow for explicit, testable validation
+
+  ℹ Microflow 'Product_Upsert' has no documentation. [QUAL002]
+      at Helpdesk.Product_Upsert
+      → Add a description explaining what this microflow does and when it should be called.
+
+  ℹ Microflow 'Product_Upsert' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Product_Upsert
+
+  ℹ Microflow 'RuntimeAgent_Ask' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.RuntimeAgent_Ask
+
+  ℹ Page 'RuntimeAgent_Page' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at Helpdesk.RuntimeAgent_Page
+      → Rename the page to include a suffix indicating its purpose, e.g., 'RuntimeAgent_Page_Overview'
+
+  ℹ Page 'RuntimeAgent_Page' has no documentation. [QUAL002]
+      at Helpdesk.RuntimeAgent_Page
+      → Describe what the page shows and who reaches it.
+
+  ℹ Page 'Helpdesk.RuntimeAgent_Page' is reachable from navigation (the 'OpenRouter agent' menu item in the 'Responsive' profile) but has no URL, so it cannot be linked to or bookmarked. [CONV019]
+      at Helpdesk.RuntimeAgent_Page
+      → Give the page a URL — `Url: 'runtimeagent_page'` on CREATE PAGE, or the URL property in Studio Pro — so it is reachable at /p/runtimeagent_page. Disable CONV019 in .claude/lint-config.yaml if this app deliberately has no deep links.
+
+  ℹ Microflow 'RuntimeAgent_Seed' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.RuntimeAgent_Seed
+
+  ⚠ Entity 'Ticket' has no business key. Add a UNIQUE NOT NULL attribute for cross-system identification. [ARCH003]
+      at Helpdesk.Ticket
+      → Add an attribute like 'TicketCode or ExternalID' with UNIQUE and NOT NULL constraints. Example: Code: String(50) NOT NULL UNIQUE
+
+  ℹ Entity 'Helpdesk.Ticket' has 1 validation rule(s). Use VAL_ microflows for validation logic instead. [CONV015]
+      at Helpdesk.Ticket
+      → Replace entity validation rules with a VAL_Ticket microflow for explicit, testable validation
+
+  ℹ Workflow 'TicketApproval' has no documentation. [QUAL002]
+      at Helpdesk.TicketApproval
+      → Describe the process the workflow models and who its user tasks are for.
+
+  ℹ Page 'Ticket_ApproveTask' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at Helpdesk.Ticket_ApproveTask
+      → Rename the page to include a suffix indicating its purpose, e.g., 'Ticket_ApproveTask_Overview'
+
+  ℹ Page 'Ticket_ApproveTask' has no documentation. [QUAL002]
+      at Helpdesk.Ticket_ApproveTask
+      → Describe what the page shows and who reaches it.
+
+  ℹ Microflow 'Ticket_CategoryFromText' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Ticket_CategoryFromText
+
+  ℹ Microflow 'Ticket_Classify' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Ticket_Classify
+
+  ℹ Page 'Ticket_NewEdit' has no documentation. [QUAL002]
+      at Helpdesk.Ticket_NewEdit
+      → Describe what the page shows and who reaches it.
+
+  ℹ Page 'Ticket_Overview' has no documentation. [QUAL002]
+      at Helpdesk.Ticket_Overview
+      → Describe what the page shows and who reaches it.
+
+  ℹ Page 'Helpdesk.Ticket_Overview' is reachable from navigation (the 'Tickets' menu item in the 'Responsive' profile) but has no URL, so it cannot be linked to or bookmarked. [CONV019]
+      at Helpdesk.Ticket_Overview
+      → Give the page a URL — `Url: 'ticket_overview'` on CREATE PAGE, or the URL property in Studio Pro — so it is reachable at /p/ticket_overview. Disable CONV019 in .claude/lint-config.yaml if this app deliberately has no deep links.
+
+  ℹ Microflow 'Tool_GetProduct' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Tool_GetProduct
+
+  ℹ Microflow 'Tool_ProductGraph' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at Helpdesk.Tool_ProductGraph
+
+  ⚠ Microflow 'Helpdesk.MCP_EnsureUser' creates $Created and commits it in the very next activity: one Create object activity with Commit set does both. [CONV021]
+      at Helpdesk.MCP_EnsureUser
+      → Remove the Commit activity and set Commit to Yes on the Create object activity (in MDL: $Created = create …(…) commit;)
+
+  ⚠ Persistent entity 'Helpdesk.Policy' has no access rules [SEC001]
+      at Helpdesk.Policy
+      → GRANT <Role> ON Helpdesk.Policy (READ *)
+
+  ⚠ Java action call in 'Helpdesk.PolicyKB_Load' uses 'Rollback' error handling instead of Custom. [CONV013]
+      at Helpdesk.PolicyKB_Load
+      → Set error handling to 'Custom with rollback' and add an error handler flow
+
+  ⚠ Microflow 'Helpdesk.Policy_Upsert' changes $Existing and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Policy_Upsert
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Existing (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.Policy_Upsert' creates $Created and commits it in the very next activity: one Create object activity with Commit set does both. [CONV021]
+      at Helpdesk.Policy_Upsert
+      → Remove the Commit activity and set Commit to Yes on the Create object activity (in MDL: $Created = create …(…) commit;)
+
+  ⚠ Persistent entity 'Helpdesk.Product' has no access rules [SEC001]
+      at Helpdesk.Product
+      → GRANT <Role> ON Helpdesk.Product (READ *)
+
+  ⚠ Microflow 'Helpdesk.Product_Upsert' changes $Existing and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Product_Upsert
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Existing (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.Product_Upsert' creates $Created and commits it in the very next activity: one Create object activity with Commit set does both. [CONV021]
+      at Helpdesk.Product_Upsert
+      → Remove the Commit activity and set Commit to Yes on the Create object activity (in MDL: $Created = create …(…) commit;)
+
+  ⚠ Java action call in 'Helpdesk.RuntimeAgent_Ask' uses 'Rollback' error handling instead of Custom. [CONV013]
+      at Helpdesk.RuntimeAgent_Ask
+      → Set error handling to 'Custom with rollback' and add an error handler flow
+
+  ⚠ Persistent entity 'Helpdesk.Ticket' has no access rules [SEC001]
+      at Helpdesk.Ticket
+      → GRANT <Role> ON Helpdesk.Ticket (READ *)
+
+  ⚠ Microflow 'Helpdesk.Ticket_Classify' changes $Ticket and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Ticket_Classify
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Ticket (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.Ticket_Classify' changes $Ticket and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Ticket_Classify
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Ticket (…) commit;)
+
+  ⚠ Microflow 'Helpdesk.Ticket_Classify' changes $Ticket and commits it in the very next activity: one Change object activity with Commit set does both. [CONV021]
+      at Helpdesk.Ticket_Classify
+      → Remove the Commit activity and set Commit to Yes on the Change object activity (in MDL: change $Ticket (…) commit;)
+
+  ⚠ DataView 'ticketView' contains input fields but is not inside a layout grid — label and input widths only render correctly inside a layoutgrid [MPR010]
+      at Helpdesk.Ticket_NewEdit
+      → Wrap dataview 'ticketView' in `layoutgrid { row { column (desktopwidth: autofill) { … } } }`
+
+MyFirstModule
+-------------
+  ℹ Layout 'App_Default' has no documentation. [QUAL002]
+      at MyFirstModule.App_Default
+      → Describe the layout's intended use and its placeholders.
+
+  ℹ Page 'Home_Web' does not end with a recognized suffix (_NewEdit, _View, _Overview, _Select, _Details, _Dashboard) [CONV003]
+      at MyFirstModule.Home_Web
+      → Rename the page to include a suffix indicating its purpose, e.g., 'Home_Web_Overview'
+
+  ℹ Page 'Home_Web' has no documentation. [QUAL002]
+      at MyFirstModule.Home_Web
+      → Describe what the page shows and who reaches it.
+
+  ℹ Image collection 'Images' has no documentation. [QUAL002]
+      at MyFirstModule.Images
+      → Describe what the collection is for and where its images are used.
+
+  ℹ Microflow 'MyFirstLogic' should start with a standard prefix (ACT_, SUB_, DS_, VAL_, SCH_, IVK_, OCH_) [CUSTOM002]
+      at MyFirstModule.MyFirstLogic
+
+  ℹ Microflow 'MyFirstLogic' is not called from anywhere. [QUAL004]
+      at MyFirstModule.MyFirstLogic
+      → Remove if unused, rename with ACT_/SCH_ prefix if it's an entry point, or add its prefix to rules.QUAL004.options.entry_point_prefixes in lint-config.yaml.
+
+120 issues: 0 errors, 35 warnings, 85 info

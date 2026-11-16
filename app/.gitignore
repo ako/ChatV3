@@ -34,3 +34,6 @@
 mxcli
 mxcli.exe
 .mxcli/
+
+# Managed Java dependencies: restore with `mxcli sync-java-deps` (the DuckDB jar alone is 80 MB)
+/vendorlib/

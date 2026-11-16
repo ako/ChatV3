@@ -1,0 +1,54 @@
+English, United States
+Helpdesk chat
+Tickets
+Task inbox
+Policy search
+Product graph
+OpenRouter agent
+Traces
+Token usage
+Token consumption monitor
+Mendix Cloud Andrej Koelewijn -Embeddings Generation - Cohere Embed v4
+Export
+Current month usage
+Input tokens
+0.5k
+Output tokens
+N/A
+Detailed usage
+DWMMTD3M6MAllCustom
+Month-to-date shows the beginning of the UTC month until the current moment.
+Timestamps are displayed in the user's local timezone.
+Input token consumption
+Nov 12026
+Nov 3
+Nov 5
+Nov 7
+Nov 9
+Nov 11
+Nov 13
+Nov 15
+0
+100
+200
+300
+400
+500
+Input tokens
+Date (local timezone)
+Token consumption
+Select user
+
+Select one of the demo users to view the application with the associated user roles.
+
+demo_administrator
+
+Administrator
+
+demo_user
+
+User
+
+helpdesk
+
+Administrator
